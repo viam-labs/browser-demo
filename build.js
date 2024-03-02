@@ -3,7 +3,7 @@ const esbuild = require('esbuild')
 
 esbuild.serve({
 	servedir: 'static',
-	port: 8000,
+	port: process.env.PORT || 8000,
 }, {
 	entryPoints: ['src/main.ts'],
 	bundle: true,
