@@ -85,7 +85,7 @@ async function main() {
       det.forEach((d) => {
         if (d.confidence > .6) {
         ctx.strokeRect(d.xMin, d.yMin, d.xMax - d.xMin, d.yMax - d.yMin)
-        ctx.fillText(`${d.className} ${d.confidence}`, d.xMin + 5, d.yMin - 10);
+        ctx.fillText(`${d.className} ${d.confidence.toFixed(2)}`, d.xMin + 5, d.yMin - 10);
         }
       })
 
