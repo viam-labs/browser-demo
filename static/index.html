@@ -9,7 +9,12 @@
   <body class="body">
     <script type="module" src="main.js"></script>
 
-    <button id="click-photo">Try it</button>
+    <select name="detector-select" id="detector-select">
+      <option value="coco-detector">COCO efficientdet tflite detector</option>
+      <option value="red-detector">Color red detector</option>
+      <option value="face-detector">Deepface facial detector</option>
+    </select>
+    <button id="click-photo">Select</button>
     <br/>
     <canvas id="canvas" hidden width="640" height="480"></canvas>
     <canvas id="finalCanvas" width="640" height="480"></canvas>

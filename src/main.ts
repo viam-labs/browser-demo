@@ -51,26 +51,26 @@ async function main() {
     console.log(error);
     return;
   }
-  const detector = new VisionClient(client, 'coco-detector');
 
-  let camera_button = document.querySelector("#start-camera");
-  let video = document.querySelector("#video");
   let click_button = document.querySelector("#click-photo");
+  let detector_select = document.querySelector("#detector-select");
   let canvas = document.querySelector("#canvas");
   let finalCanvas = document.querySelector("#finalCanvas");
-  let image = document.querySelector("#image");
   let captureDevice;
-
-  let video_constraints = {
-    width: {min: 200, max: 1000},
-    height: { min: 200, max: 800}, 
-  };
-  let mstream = await navigator.mediaDevices.getUserMedia({ video: video_constraints, audio: false });
+  let mstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   console.log("got media stream")
   captureDevice = new ImageCapture(mstream.getVideoTracks()[0]);
   
+  let running = true;
+
   click_button.addEventListener('click', async function() {
-    while(true) {
+    running = false;
+    const detector = new VisionClient(client, detector_select.value);
+    // wait a bit to ensure previous running loop stops
+    await new Promise(r => setTimeout(r, 500));
+    running = true;
+
+    while(running) {
       let img = await captureDevice.takePhoto()
       let bImage = await createImageBitmap(img, {resizeWidth: 640, resizeHeight: 480})
       var ctx = canvas.getContext("2d");
