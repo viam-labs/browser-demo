@@ -16,10 +16,14 @@
   },
   "dependencies": {
     "@viamrobotics/sdk": "^0.10.1",
+    "audio-decode": "^2.2.0",
+    "audio-play": "^2.3.1",
     "autoprefixer": "^10.4.14",
+    "chat-service-api": "github:viam-labs/chat-service-api",
+    "image-capture": "^0.4.0",
     "nes.css": "^2.3.0",
     "postcss": "^8.4.23",
-    "tailwindcss": "^3.3.2",
-    "image-capture": "^0.4.0" 
-   }
+    "speech-service-api": "github:viam-labs/speech-service-api#v0.2.2",
+    "tailwindcss": "^3.3.2"
+  }
 }

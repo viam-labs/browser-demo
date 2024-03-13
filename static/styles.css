@@ -1,169 +1,253 @@
-button {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+0:03 hrs
+body {
+    color: #777;
 }
 
-div {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+.pure-img-responsive {
+    max-width: 100%;
+    height: auto;
 }
 
-.body {
-    background-color: #ddf;
-}
-.custom-box-shadow {
-    box-shadow: 0 10px 0 0 #000000, 0 15px 0 0 #ffffff;
-    transform: translateY(0);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-.custom-box-shadow-active {
-    box-shadow: 0 0px 0 0 #000000, 0 0px 0 0 #ffffff;
-    transform: translateY(10px);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.custom-box-shadow {
-    box-shadow: 0 10px 0 0 #000000, 0 15px 0 0 #ffffff;
-}
-.custom-box-shadow-active {
-    box-shadow: 0 0px 0 0 #000000, 0 0px 0 0 #ffffff;
-}
-.custom-box-shadow:focus {
-    box-shadow: 0 10px 0 0 #000000, 0 15px 0 0 #ffffff;
+/*
+Add transition to containers so they can push in and out.
+*/
+#layout,
+#menu,
+.menu-link {
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    -ms-transition: all 0.2s ease-out;
+    -o-transition: all 0.2s ease-out;
+    transition: all 0.2s ease-out;
 }
 
-.error {
-    background-color: #EF4444 !important; 
-    box-shadow: 0 10px 0 0 #B91C1C, 0 15px 0 0 #ffffff !important;
-    pointer-events: none;
+/*
+This is the parent `<div>` that contains the menu and the content area.
+*/
+#layout {
+    position: relative;
+    left: 0;
+    padding-left: 0;
+}
+    #layout.active #menu {
+        left: 150px;
+        width: 150px;
+    }
+
+    #layout.active .menu-link {
+        left: 150px;
+    }
+/*
+The content `<div>` is where all your content goes.
+*/
+.content {
+    margin: 0 auto;
+    padding: 0 2em;
+    max-width: 900px;
+    margin-bottom: 50px;
+    line-height: 1.6em;
 }
 
-.error:active {
-    transform: translateY(10px);
-    transition: box-shadow 0.2s ease, transform 0.2s ease, color 0.2s ease;
+.header {
+     margin: 0;
+     color: #333;
+     text-align: center;
+     padding: 2.5em 2em 0;
+     border-bottom: 1px solid #eee;
+ }
+    .header h1 {
+        margin: 0.2em 0;
+        font-size: 3em;
+        font-weight: 300;
+    }
+     .header h2 {
+        font-weight: 300;
+        color: #ccc;
+        padding: 0;
+        margin-top: 0;
+    }
+
+.content-subhead {
+    margin: 50px 0 20px 0;
+    font-weight: 300;
+    color: #888;
 }
 
-.error .icon {
-    filter: grayscale(100%);
+
+
+/*
+The `#menu` `<div>` is the parent `<div>` that contains the `.pure-menu` that
+appears on the left side of the page.
+*/
+
+#menu {
+    margin-left: -150px; /* "#menu" width */
+    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1000; /* so the menu or its navicon stays above all content */
+    background: #191818;
+    overflow-y: auto;
+}
+    /*
+    All anchors inside the menu should be styled like this.
+    */
+    #menu a {
+        color: #999;
+        border: none;
+        padding: 0.6em 0 0.6em 0.6em;
+    }
+
+    /*
+    Remove all background/borders, since we are applying them to #menu.
+    */
+     #menu .pure-menu,
+     #menu .pure-menu ul {
+        border: none;
+        background: transparent;
+    }
+
+    /*
+    Add that light border to separate items into groups.
+    */
+    #menu .pure-menu ul,
+    #menu .pure-menu .menu-item-divided {
+        border-top: 1px solid #333;
+    }
+    /*
+    Change color of the anchor links on hover/focus.
+    */
+    #menu .pure-menu li a:hover,
+    #menu .pure-menu li a:focus {
+        background: #333;
+    }
+
+    /*
+    This styles the selected menu item `<li>`.
+    */
+    #menu .pure-menu-selected {
+        background: #66a
+    }
+
+    #menu .pure-menu-heading {
+        background: #444;
+    }
+    
+    /*
+    This styles a link within a selected menu item `<li>`.
+    */
+    #menu .pure-menu-selected a {
+        color: #fff;
+    }
+
+    /*
+    This styles the menu heading.
+    */
+    #menu .pure-menu-heading {
+        font-size: 110%;
+        color: #fff;
+        margin: 0;
+    }
+
+/* -- Dynamic Button For Responsive Menu -------------------------------------*/
+
+/*
+The button to open/close the Menu is custom-made and not part of Pure. Here's
+how it works:
+*/
+
+/*
+`.menu-link` represents the responsive menu toggle that shows/hides on
+small screens.
+*/
+.menu-link {
+    position: fixed;
+    display: block; /* show this only on small screens */
+    top: 0;
+    left: 0; /* "#menu width" */
+    background: #000;
+    background: rgba(0,0,0,0.7);
+    font-size: 10px; /* change this value to increase/decrease button size */
+    z-index: 10;
+    width: 2em;
+    height: auto;
+    padding: 2.1em 1.6em;
 }
 
-.grid-container {
-    margin-top:20px;
-    margin-left:235px;
-    width: 620px;
-    height: 620px;
-    padding: 0px;
+    .menu-link:hover,
+    .menu-link:focus {
+        background: #000;
+    }
+
+    .menu-link span {
+        position: relative;
+        display: block;
+    }
+
+    .menu-link span,
+    .menu-link span:before,
+    .menu-link span:after {
+        background-color: #fff;
+        pointer-events: none;
+        width: 100%;
+        height: 0.2em;
+    }
+
+        .menu-link span:before,
+        .menu-link span:after {
+            position: absolute;
+            margin-top: -0.6em;
+            content: " ";
+        }
+
+        .menu-link span:after {
+            margin-top: 0.6em;
+        }
+
+
+/* -- Responsive Styles (Media Queries) ------------------------------------- */
+
+/*
+Hides the menu at `48em`, but modify this based on your app's needs.
+*/
+@media (min-width: 48em) {
+
+    .header,
+    .content {
+        padding-left: 2em;
+        padding-right: 2em;
+    }
+
+    #layout {
+        padding-left: 150px; /* left col width "#menu" */
+        left: 0;
+    }
+    #menu {
+        left: 150px;
+    }
+
+    .menu-link {
+        position: fixed;
+        left: 150px;
+        display: none;
+    }
+
+    #layout.active .menu-link {
+        left: 150px;
+    }
 }
 
-.grid-container-ready {
-    background-color: #6ded8a;
-}
-
-.grid-container-moving {
-    background-color: #ffee99;
-}
-
-.grid-container-error {
-    background-color: #aa0000;
-}
-
-.grid-table {
-    border: 4px solid;
-}
-
-.grid-border {
-    width: 100px;
-}
-
-.grid-quad {
-    width: 142px;
-    height: 142px;
-    background-image: url('images/8bit-ball.png');
-    //background-size: contain;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-    background-size: 100% 100%;
-}
-
-.grid-claw {
-    width: 142px;
-    height: 142px;
-    background-image: url('images/robot-claw.svg');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-}
-.grid-arrow {
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-}
-
-.grid-arrow-right {
-    width:90px;
-    height: 400px;
-    margin: -20px;
-    background-image: url('images/chevron-right-svgrepo-com.svg');
-    //background-position-y: 200px;
-}
-
-.grid-arrow-left {
-    width:90px;
-    height: 400px;
-    margin: -20px;
-    background-image: url('images/chevron-left-svgrepo-com.svg');
-    //background-position-y: 200px;
-}
-
-.grid-arrow-up {
-    background-image: url('images/chevron-up-svgrepo-com.svg');
-    //background-position-x: 265px;
-    margin: -15px;
-    height: 90px
-}
-
-.grid-arrow-down {
-    background-image: url('images/chevron-down-svgrepo-com.svg');
-    //background-position-x: 265px;
-    margin: -15px;
-    height: 90px
-}
-
-.grid-avatar {
-    margin-top: 10px;
-    margin-right: 6px;
-    margin-left:240px;
-    width:90px;
-}
-
-.grid-drop {
-    background: #999;
-}
-
-.animate-right {
-    float:right;
-    margin-top:-460px;
-    margin-right:100px;
-    width: 150px;
-    height: 150px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-    image-rendering: pixelated;
-}
-
-.animate-left {
-    float:left;
-    margin-top:300px;
-    margin-left:80px;
-    width: 150px;
-    height: 150px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-origin: content-box;
-    image-rendering: pixelated;
+@media (max-width: 48em) {
+    /* Only apply this when the window is small. Otherwise, the following
+    case results in extra padding on the left:
+        * Make the window small.
+        * Tap the menu to trigger the active state.
+        * Make the window large again.
+    */
+    #layout.active {
+        position: relative;
+        left: 150px;
+    }
 }
