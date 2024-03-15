@@ -55,6 +55,12 @@ async function main() {
 
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
+  let detector_code = { 
+                      "coco-detector" : document.querySelector("#coco-detector-code"),
+                      "red-detector" : document.querySelector("#red-detector-code"),
+                      "face-detector" : document.querySelector("#face-detector-code")
+                      };
+
   let canvas = document.querySelector("#canvas");
   let finalCanvas = document.querySelector("#finalCanvas");
 
@@ -105,13 +111,13 @@ async function main() {
 });
 
   const system_monitor = new SensorClient(client, 'telegraf');
+  const speech = new SpeechClient(client, "speechio");
 
   async function run(type) {
     if (type == 'system') {
       let display_stats = {}
       while(running['system']) {
         const stats = await system_monitor.getReadings();
-        console.log(stats)
         system_table.innerHTML = "";
         let row = system_table.insertRow();
         let cell = row.insertCell();
@@ -225,29 +231,37 @@ async function main() {
 
         await new Promise(r => setTimeout(r, 100));
       }
+    } else if (type == "gesture") {
+
     }
   }
 
   detector_button.addEventListener('click', async function() {
     running['object'] = false;
     const detector = new VisionClient(client, detector_select.value);
+
+    for (const [key, value] of Object.entries(detector_code)) {
+      if (detector_select.value == key) {
+        detector_code[key].style.display = 'block';
+      } else {
+        detector_code[key].style.display = 'none';
+      }
+    }
+
     // wait a bit to ensure previous running loop stops
     await new Promise(r => setTimeout(r, 500));
     running['object'] = true;
 
-    const speech = new SpeechClient(client, "speechio");
-    let sp = await speech.toSpeech(detector_select.options[detector_select.selectedIndex].text)
-    const audioBuffer = await decoders.mp3(sp); // decode
-    play(audioBuffer)
+    let seen_classes = {};
 
     const llm = new ChatClient(client, "llm");
-    let completion = await llm.chat("Write a scary story about apple, letter L, peanut butter, cars");
-    console.log(completion)
+    //let completion = await llm.chat("Write a scary story about apple, letter L, peanut butter, cars");
+    //console.log(completion)
 
 
     while(running['object']) {
       let img = await captureDevice.takePhoto()
-      let bImage = await createImageBitmap(img, {resizeWidth: 640, resizeHeight: 480})
+      let bImage = await createImageBitmap(img, {resizeWidth: 300, resizeHeight: 280})
       var ctx = canvas.getContext("2d");
       var destCtx = finalCanvas.getContext('2d')
       ctx.strokeStyle = "#aa0000";
@@ -256,11 +270,17 @@ async function main() {
       ctx.drawImage(bImage, 0, 0);
 
       var imgData = canvas.toDataURL('image/jpeg')
-      let det = await detector.getDetections(convertDataURIToBinary(imgData), 640, 480, 'image/jpeg')
-      det.forEach((d) => {
+      let det = await detector.getDetections(convertDataURIToBinary(imgData), 300, 280, 'image/jpeg')
+      det.forEach( async (d) => {
         if (d.confidence > .6) {
-        ctx.strokeRect(d.xMin, d.yMin, d.xMax - d.xMin, d.yMax - d.yMin)
-        ctx.fillText(`${d.className} ${d.confidence.toFixed(2)}`, d.xMin + 5, d.yMin - 10);
+          if (!seen_classes[d.className]) {
+            seen_classes[d.className] = true;
+            let sp = await speech.toSpeech("I see a " + d.className);
+            const audioBuffer = await decoders.mp3(sp); // decode
+            play(audioBuffer);
+          }
+          ctx.strokeRect(d.xMin, d.yMin, d.xMax - d.xMin, d.yMax - d.yMin)
+          ctx.fillText(`${d.className} ${d.confidence.toFixed(2)}`, d.xMin + 5, d.yMin - 10);
         }
       })
 
