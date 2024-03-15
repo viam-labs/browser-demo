@@ -251,3 +251,35 @@ Hides the menu at `48em`, but modify this based on your app's needs.
         left: 150px;
     }
 }
+
+.marquee-container {
+    padding:3px;
+    border:1px solid #e6e6e6;
+    width:850px;
+    overflow:hidden;
+  }
+  .marquee{
+  display:block;
+  position:relative;
+  width:3800px;
+  height:250px;
+  animation:scroll 25s linear infinite;
+  padding:3px;
+  }
+  
+  .marquee:hover {
+      animation-play-state: paused
+  }
+  
+  .marquee-img {
+    width:300px;
+    height:250px;
+    margin:3px;
+    float:left;
+  }
+  
+  /* Make it move */
+  @keyframes scroll{
+  0% {left:200px;}
+  100% {left:-3500px;}
+  }

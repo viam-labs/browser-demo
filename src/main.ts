@@ -56,11 +56,15 @@ async function main() {
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
   let detector_code = { 
-                      "coco-detector" : document.querySelector("#coco-detector-code"),
-                      "red-detector" : document.querySelector("#red-detector-code"),
-                      "face-detector" : document.querySelector("#face-detector-code")
-                      };
-
+    "coco-detector" : document.querySelector("#coco-detector-code"),
+    "red-detector" : document.querySelector("#red-detector-code"),
+    "face-detector" : document.querySelector("#face-detector-code")
+  };
+  let detector_desc = { 
+    "coco-detector" : document.querySelector("#coco-detector-desc"),
+    "red-detector" : document.querySelector("#red-detector-desc"),
+    "face-detector" : document.querySelector("#face-detector-desc")
+  };
   let canvas = document.querySelector("#canvas");
   let finalCanvas = document.querySelector("#finalCanvas");
 
@@ -73,6 +77,9 @@ async function main() {
   let vlm_select = document.querySelector("#vlm_select");
   let more_select = document.querySelector("#more_select");
   let nav_selectors = [home_select, system_select, object_select, gesture_select, vlm_select, more_select]
+
+  let asl_words = document.querySelector("#asl_words");
+  let asl_completion = document.querySelector("#asl_completion");
 
   let captureDevice;
   let mstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -112,6 +119,8 @@ async function main() {
 
   const system_monitor = new SensorClient(client, 'telegraf');
   const speech = new SpeechClient(client, "speechio");
+  const asl_detector = new VisionClient(client, "asl_detector");
+  const llm = new ChatClient(client, "llm");
 
   async function run(type) {
     if (type == 'system') {
@@ -232,8 +241,47 @@ async function main() {
         await new Promise(r => setTimeout(r, 100));
       }
     } else if (type == "gesture") {
-
+      while(running['gesture']) {
+        let completed = false;
+        let last_seen = "";
+        let letters = "";
+        while (!completed) {
+          let img = await getImage();
+          let detections = await asl_detector.getDetections(img.image, 300, 280, 'image/jpeg');
+          if (detections[0] && detections[0].confidence > .7) {
+            if (detections[0].className == 'V' && last_seen == 'V') {
+              let chat_prefix = "Make up an acronym from only the letters ";
+              letters = letters.substring(0, letters.length - 1);
+              asl_words.innerHTML = letters;
+              asl_completion.innerHTML = "Please wait...";
+              let completion = await llm.chat(chat_prefix + letters);
+              letters = "";
+              asl_completion.innerHTML = completion;
+              completed = true;
+            }
+            else {
+              last_seen = detections[0].className;
+              letters = letters + detections[0].className;
+              asl_words.innerHTML = letters;
+              await new Promise(r => setTimeout(r, 500));
+            }
+          }
+        }
+      }
     }
+  }
+
+  async function getImage() {
+    let img = await captureDevice.takePhoto();
+    let bImage = await createImageBitmap(img, {resizeWidth: 300, resizeHeight: 280})
+    var ctx = canvas.getContext("2d");
+    ctx.strokeStyle = "#aa0000";
+    ctx.fillStyle = "#aa0000";
+    ctx.font = "14px Arial";
+    ctx.drawImage(bImage, 0, 0);
+
+    var imgData = canvas.toDataURL('image/jpeg');
+    return { image: convertDataURIToBinary(imgData), ctx: ctx };
   }
 
   detector_button.addEventListener('click', async function() {
@@ -243,8 +291,10 @@ async function main() {
     for (const [key, value] of Object.entries(detector_code)) {
       if (detector_select.value == key) {
         detector_code[key].style.display = 'block';
+        detector_desc[key].style.display = 'block';
       } else {
         detector_code[key].style.display = 'none';
+        detector_desc[key].style.display = 'none';
       }
     }
 
@@ -254,23 +304,9 @@ async function main() {
 
     let seen_classes = {};
 
-    const llm = new ChatClient(client, "llm");
-    //let completion = await llm.chat("Write a scary story about apple, letter L, peanut butter, cars");
-    //console.log(completion)
-
-
     while(running['object']) {
-      let img = await captureDevice.takePhoto()
-      let bImage = await createImageBitmap(img, {resizeWidth: 300, resizeHeight: 280})
-      var ctx = canvas.getContext("2d");
-      var destCtx = finalCanvas.getContext('2d')
-      ctx.strokeStyle = "#aa0000";
-      ctx.fillStyle = "#aa0000";
-      ctx.font = "14px Arial"
-      ctx.drawImage(bImage, 0, 0);
-
-      var imgData = canvas.toDataURL('image/jpeg')
-      let det = await detector.getDetections(convertDataURIToBinary(imgData), 300, 280, 'image/jpeg')
+      let img = await getImage();
+      let det = await detector.getDetections(img.image, 300, 280, 'image/jpeg')
       det.forEach( async (d) => {
         if (d.confidence > .6) {
           if (!seen_classes[d.className]) {
@@ -279,11 +315,11 @@ async function main() {
             const audioBuffer = await decoders.mp3(sp); // decode
             play(audioBuffer);
           }
-          ctx.strokeRect(d.xMin, d.yMin, d.xMax - d.xMin, d.yMax - d.yMin)
-          ctx.fillText(`${d.className} ${d.confidence.toFixed(2)}`, d.xMin + 5, d.yMin - 10);
+          img.ctx.strokeRect(d.xMin, d.yMin, d.xMax - d.xMin, d.yMax - d.yMin)
+          img.ctx.fillText(`${d.className} ${d.confidence.toFixed(2)}`, d.xMin + 5, d.yMin - 10);
         }
       })
-
+      var destCtx = finalCanvas.getContext('2d')
       destCtx.drawImage(canvas,0,0)
     }
   });
