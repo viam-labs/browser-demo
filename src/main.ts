@@ -183,7 +183,6 @@ async function main() {
       let display_stats = {}
       while(running['system']) {
         const stats = await system_monitor.getReadings();
-        console.log(stats)
         system_table.innerHTML = "";
         let row = system_table.insertRow();
         let cell = row.insertCell();
