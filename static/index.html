@@ -153,7 +153,7 @@ if (detections[0] && detections[0].confidence > .6) {
           </p>
           <p>
             Try making some of the signs to spell a word or words, <b>ending with the letter V (looks like the "peace" sign) 2 times</b>. 
-            Once this has been detected, we will use the <a href="https://github.com/jzhang38/TinyLlama">TinyLLama 1.1b</a> LLM (large language model) 
+            Once this has been detected, we will use the <a href="https://huggingface.co/pansophic/rocket-3B">Rocket 3b</a> LLM (large language model) 
             deployed to our machine with the <a href="https://app.viam.com/module/viam-labs/local-llm">local-llm</a> module from the Viam registry to create a response based on those words.
           </p>
           <div class="pure-g">
@@ -172,7 +172,7 @@ if (detections[0] && detections[0].confidence > .6) {
                 </div>
               </div>
 <br/>
-              <div style="height:500px;width:550px;overflow:auto;padding-left: 1em;">
+              <div style="height:500px;width:580px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript" style="display:block">import { createRobotClient, VisionClient } from '@viamrobotics/sdk';
 import { ChatClient } from 'chat-service-api';
 const client = createRobotClient({...});
@@ -203,7 +203,94 @@ while (!completed) {
 
 
         <div class="content" id="vlm_content" style="display: none;">
-          vlm demo
+          <p>
+            Vision language models (VLMs) extend traditional LLMs by incorporating the ability to interpret images.
+            We can run small VLMs like <a href="https://github.com/vikhyat/moondream">Moondream</a> (or larger VLMs!)
+            with Viam, in this case managed by the <a href="https://app.viam.com/module/viam-labs/moondream-vision">moondream-vision service</a> from the Viam registry.
+          </p>
+          <p>
+            Choose one of the images, or capture one from your webcam.
+            Then, hold down the "Ask Question" button and ask a question about the photo like "Where is the dog?" aloud. 
+            We will use the <a href="https://app.viam.com/module/viam-labs/speech">Speech module</a> from the Viam registry to convert your question audio to text, 
+            then send that to the Moondream VLM for a response.
+          </p>
+          <div class="pure-g">
+            <div class="pure-u-1-3">
+              
+              <a href="#vlm" id="captureForVLM">Use webcam image</a> or click one below
+              <div style="border: 1px; border-style:solid; width: 280px; height: 220px;">
+                <canvas id="VLMImage" width="280" height="220"></canvas>
+              </div>
+              <br/>
+              <div class="pure-g">
+                <div class="pure-u-1-2">
+                  <img src="images/dog_lake.jpg" id="vlm_dog" style="width:120px;height:150px;"/>
+                </div>
+                <div class="pure-u-1-2">
+                  <img src="images/bread.jpg" id="vlm_bread" style="width:120px;height:150px;"/>
+                </div>
+              </div>
+
+              <div class="pure-g">
+                <div class="pure-u-1-2">
+                  <img src="images/car_building.jpg" id="vlm_car" style="width:120px;height:150px;"/>
+                </div>
+                <div class="pure-u-1-2">
+                  <img src="images/balance.jpg" id="vlm_balance" style="width:120px;height:150px;"/>
+                </div>
+              </div>
+
+              <div class="pure-g">
+                <div class="pure-u-1-2">
+                  <img src="images/flowers.jpg" id="vlm_flowers" style="width:120px;height:150px;"/>
+                </div>
+                <div class="pure-u-1-2">
+                  <img src="images/party.jpg" id="vlm_party" style="width:120px;height:150px;"/>
+                </div>
+              </div>
+            </div>
+            <div class="pure-u-2-3">
+              <div style="padding-left: 20px;"><a class="pure-button pure-button-disabled" id="vlmRecordQuestion" href="#vlm">Hold and ask question</a>
+
+              <div class="pure-g">
+                <div class="pure-u-1-2" style="height: 150px;">
+                  <b>Question:</b>
+                  <div id="vlm_question" style="height:100px;overflow-wrap: break-word;overflow-y: scroll;"></div>
+                </div>
+                <div class="pure-u-1-2" style="height: 150px;">
+                  <b>Response:</b>
+                  <div id="vlm_completion" style="height:130px;overflow-wrap: break-word;overflow-y: scroll;"></div>
+                </div>
+              </div>
+            </div>
+<br/>
+              <div style="height:500px;width:580px;overflow:auto;padding-left: 1em;">
+<pre><code class="language-javascript" style="display:block">import { createRobotClient, VisionClient } from '@viamrobotics/sdk';
+import { ChatClient } from 'chat-service-api';
+const client = createRobotClient({...});
+const asl_detector = new VisionClient(client, "asl_detector");
+const llm = new ChatClient(client, "llm");
+
+let completed = false;
+let last_seen = "";
+let letters = "";
+const chat_prefix = "Create an acronym from the letters ";
+while (!completed) {
+  let detections = await asl_detector.getDetections(image, 300, 280, 'image/jpeg');
+  if (detections[0] && detections[0].confidence > .8) {
+    if (detections[0].className == 'V' && last_seen == 'V') {
+      let completion = await llm.chat(chat_prefix + letters);
+      completed = true;
+    }
+    else {
+      last_seen = detections[0].className;
+      letters = letters + detections[0].className;
+    }
+  }
+}
+                </code></pre></div>
+            </div>
+          </div> 
         </div>
 
         <div class="content" id="more_content" style="display: none;">

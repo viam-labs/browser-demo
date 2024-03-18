@@ -3,6 +3,8 @@ import { SpeechClient } from 'speech-service-api'
 import { ImageCapture } from 'image-capture';
 import play from 'audio-play';
 import decode, {decoders} from 'audio-decode';
+import { MediaRecorder, register } from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
 import { ChatClient } from 'chat-service-api';
 
 // globals
@@ -10,7 +12,7 @@ const robotLocation = process.env.ROBOT_LOCATION
 const robotKey = process.env.ROBOT_KEY
 const robotKeyId = process.env.ROBOT_KEY_ID
 
-async function connect() {
+async function viam_connect() {
   const credential = {
     payload: robotKey,
     type: 'api-key',
@@ -46,12 +48,13 @@ async function main() {
   // Connect to client
   let client: Client;  
   try {
-    client = await connect();
+    client = await viam_connect();
     console.log('connected!');
   } catch (error) {
     console.log(error);
     return;
   }
+  await register(await connect());
 
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
@@ -65,8 +68,9 @@ async function main() {
     "red-detector" : document.querySelector("#red-detector-desc"),
     "face-detector" : document.querySelector("#face-detector-desc")
   };
-  let canvas = document.querySelector("#canvas");
+  let tempCanvas = document.querySelector("#canvas");
   let finalCanvas = document.querySelector("#finalCanvas");
+  let vlmCanvas = document.querySelector("#VLMImage");
 
   let system_table = document.querySelector("#system_table");
 
@@ -75,17 +79,64 @@ async function main() {
   let object_select = document.querySelector("#object_select");
   let gesture_select = document.querySelector("#gesture_select");
   let vlm_select = document.querySelector("#vlm_select");
+  let vlm_question = document.querySelector("#vlm_question");
+  let vlm_completion = document.querySelector("#vlm_completion");
   let more_select = document.querySelector("#more_select");
   let nav_selectors = [home_select, system_select, object_select, gesture_select, vlm_select, more_select]
 
   let asl_words = document.querySelector("#asl_words");
   let asl_completion = document.querySelector("#asl_completion");
 
+  let captureForVLM = document.querySelector('#captureForVLM');
+  let vlmImages = {
+    'dog': document.querySelector('#vlm_dog'),
+    'bread': document.querySelector('#vlm_bread'),
+    'car': document.querySelector('#vlm_car'),
+    'balance': document.querySelector('#vlm_balance'),
+    'flowers': document.querySelector('#vlm_flowers'),
+    'party': document.querySelector('#vlm_party'),
+  }
+  let vlmRecordQuestion = document.querySelector('#vlmRecordQuestion');
+
   let captureDevice;
-  let mstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  let vstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  let astream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+
   console.log("got media stream")
-  captureDevice = new ImageCapture(mstream.getVideoTracks()[0]);
-  
+  captureDevice = new ImageCapture(vstream.getVideoTracks()[0]);
+  const mediaRecorder = new MediaRecorder(astream, { mimeType: 'audio/wav' });
+  let audioChunks = [];
+
+  const system_monitor = new SensorClient(client, 'telegraf');
+  const speech = new SpeechClient(client, "speechio");
+  const asl_detector = new VisionClient(client, "asl_detector");
+  const vlm_classifier = new VisionClient(client, "moondream-vision");
+  const llm = new ChatClient(client, "llm");
+
+  mediaRecorder.addEventListener('dataavailable', event => {
+    audioChunks.push(event.data);
+    console.log("recording")
+  });
+
+  vlmRecordQuestion?.addEventListener("mousedown", () => {
+    mediaRecorder.start();
+    vlm_question.innerHTML = "Please wait...";
+    vlm_completion.innerHTML = "";
+  });
+
+  vlmRecordQuestion?.addEventListener("mouseup", async () => {
+    mediaRecorder.stop();
+    // give some time to process
+    await new Promise(r => setTimeout(r, 200));
+    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+    audioChunks = [];
+    const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
+    vlm_question.innerHTML = speechText;
+    vlm_completion.innerHTML = "Please wait... this can take some time."
+    let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
+    vlm_completion.innerHTML = classifications[0].className;
+  });
+
   let running = {
     'home' : false,
     'system': false,
@@ -96,31 +147,34 @@ async function main() {
   };
 
 
+  for (let vlmImg in vlmImages) {
+    vlmImages[vlmImg].addEventListener("click", () => {
+      var context = vlmCanvas.getContext('2d');
+      context.drawImage(vlmImages[vlmImg], 0, 0, 280, 220);
+      vlmRecordQuestion?.classList.remove("pure-button-disabled");
+    })
+  }
+
   nav_selectors.forEach(function(sel_elem) {
     sel_elem.classList.remove('pure-menu-selected')
 
     sel_elem.addEventListener("click", function() {
-      nav_selectors.forEach(function(elem) {
-        let elem_prefix = elem.id.split('_')[0]
+      for (const elem in nav_selectors) {
+        let elem_prefix = nav_selectors[elem].id.split('_')[0]
         let elem_content = document.getElementById(`${elem_prefix}_content`);
-        if (sel_elem.id == elem.id) {
+        if (sel_elem.id == nav_selectors[elem].id) {
           running[elem_prefix] = true;
-          elem.classList.add('pure-menu-selected');
+          nav_selectors[elem].classList.add('pure-menu-selected');
           elem_content.style.display = "block";
           run(elem_prefix);
         } else {
           running[elem_prefix] = false;
-          elem.classList.remove('pure-menu-selected')
+          nav_selectors[elem].classList.remove('pure-menu-selected')
           elem_content.style.display = "none"
         }
-      });
+      }
     });
 });
-
-  const system_monitor = new SensorClient(client, 'telegraf');
-  const speech = new SpeechClient(client, "speechio");
-  const asl_detector = new VisionClient(client, "asl_detector");
-  const llm = new ChatClient(client, "llm");
 
   async function run(type) {
     if (type == 'system') {
@@ -241,12 +295,16 @@ async function main() {
         await new Promise(r => setTimeout(r, 100));
       }
     } else if (type == "gesture") {
+      asl_words.innerHTML = "";
+      asl_completion.innerHTML = "";
+
       while(running['gesture']) {
         let completed = false;
         let last_seen = "";
         let letters = "";
+
         while (!completed) {
-          let img = await getImage();
+          let img = await captureImage(300,280);
           let detections = await asl_detector.getDetections(img.image, 300, 280, 'image/jpeg');
           if (detections[0] && detections[0].confidence > .7) {
             if (detections[0].className == 'V' && last_seen == 'V') {
@@ -271,20 +329,32 @@ async function main() {
     }
   }
 
-  async function getImage() {
+  async function captureImage(width, height) {
     let img = await captureDevice.takePhoto();
-    let bImage = await createImageBitmap(img, {resizeWidth: 300, resizeHeight: 280})
-    var ctx = canvas.getContext("2d");
+    let bImage = await createImageBitmap(img, {resizeWidth: width, resizeHeight: height})
+    var ctx = tempCanvas.getContext("2d");
     ctx.strokeStyle = "#aa0000";
     ctx.fillStyle = "#aa0000";
     ctx.font = "14px Arial";
     ctx.drawImage(bImage, 0, 0);
 
-    var imgData = canvas.toDataURL('image/jpeg');
-    return { image: convertDataURIToBinary(imgData), ctx: ctx };
+    return { image: getImage(tempCanvas), ctx: ctx };
   }
 
-  detector_button.addEventListener('click', async function() {
+  function getImage(selectedCanvas) {
+    var imgData = selectedCanvas.toDataURL('image/jpeg');
+    return convertDataURIToBinary(imgData);
+  }
+
+  captureForVLM.addEventListener('click', async () =>
+  {
+    await captureImage(280, 220);
+    var destCtx = vlmCanvas.getContext('2d');
+    destCtx.drawImage(tempCanvas,0,0);
+    vlmRecordQuestion?.classList.remove("pure-button-disabled");
+  });
+
+  detector_button.addEventListener('click', async () => {
     running['object'] = false;
     const detector = new VisionClient(client, detector_select.value);
 
@@ -305,7 +375,7 @@ async function main() {
     let seen_classes = {};
 
     while(running['object']) {
-      let img = await getImage();
+      let img = await captureImage(300,280);
       let det = await detector.getDetections(img.image, 300, 280, 'image/jpeg')
       det.forEach( async (d) => {
         if (d.confidence > .6) {
@@ -320,7 +390,7 @@ async function main() {
         }
       })
       var destCtx = finalCanvas.getContext('2d')
-      destCtx.drawImage(canvas,0,0)
+      destCtx.drawImage(tempCanvas,0,0)
     }
   });
 }
