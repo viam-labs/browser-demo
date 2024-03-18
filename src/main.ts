@@ -128,9 +128,14 @@ async function main() {
     vlmRecordQuestion?.classList.add("pure-button-disabled");
     mediaRecorder.stop();
     // give some time to process
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 1000));
     const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
     audioChunks = [];
+    
+    // uncomment below for testing
+    //const audio = new Audio();
+    //audio.src = URL.createObjectURL(blob);
+    //audio.play();
     const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
     vlm_question.innerHTML = speechText;
     vlm_completion.innerHTML = "Please wait... this can take some time."
