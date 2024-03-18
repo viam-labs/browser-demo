@@ -183,6 +183,7 @@ async function main() {
       let display_stats = {}
       while(running['system']) {
         const stats = await system_monitor.getReadings();
+        console.log(stats)
         system_table.innerHTML = "";
         let row = system_table.insertRow();
         let cell = row.insertCell();
@@ -246,6 +247,8 @@ async function main() {
         cell2 = row.insertCell();
         if (stats.diskio && stats.diskio.fields) {
           display_stats['disk_reads'] = stats.diskio.fields.reads;
+        } else if (stats.diskio && stats.diskio.sda && stats.diskio.sda.fields) {
+          display_stats['disk_reads'] = stats.diskio.sda.fields.reads;
         }
         text2 = document.createTextNode(display_stats['disk_reads']);
         cell2.appendChild(text2);
@@ -257,6 +260,8 @@ async function main() {
         cell2 = row.insertCell();
         if (stats.diskio && stats.diskio.fields) {
           display_stats['disk_writes'] = stats.diskio.fields.writes;
+        } else if (stats.diskio && stats.diskio.sda && stats.diskio.sda.fields) {
+          display_stats['disk_writes'] = stats.diskio.sda.fields.writes;
         }
         text2 = document.createTextNode(display_stats['disk_writes']);
         cell2.appendChild(text2);
