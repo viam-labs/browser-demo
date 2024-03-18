@@ -41,15 +41,23 @@
         <div class="header"><h1>Viam Resource Playground</h1></div>
 
         <div class="content" id="home_content">
-          <p><a href="https://viam.com">Viam</a> is a platform that allows you to compose a smart machine or robotics project from any number of components or services through configuration.
-            Components typically represent physical hardware, while services represent higher-level functionality - often integrating with physical hardware or other technologies like Machine Learning, Artificial Intelligence, or external APIs.
-            Viam components and services that are configured as part of a machine present an API that can then be interfaced with through secure SDKs in the programming language of your choice. 
-          </p> 
+          <div class="pure-g">
+            <div class="pure-u-1-2">
+              <p><a href="https://viam.com">Viam</a> is a platform that allows you to compose a smart machine or robotics project from any number of components or services through configuration.</p>
+              <p>
+                Components typically represent physical hardware, while services represent higher-level functionality - often integrating with physical hardware or other technologies like Machine Learning, Artificial Intelligence, or external APIs.
+                Viam components and services that are configured as part of a machine present an API that can then be interfaced with through secure SDKs in the programming language of your choice. 
+              </p> 
+              <p>
+                Here, you can interact with a number of built-in and modular Viam resources running on a viam-server instance in Google Cloud Platform (GCP) through Viam's TypeScript SDK.
+              </p>
+              </div>
+              <div class="pure-u-1-2" style="padding-top: 10px;">
+                <img src="images/viam.png"/>
+              </div>
+          </div>
           <p>
-            Here, you can interact with a number of built-in and modular Viam resources running on a viam-server instance in Google Cloud Platform (GCP) through Viam's TypeScript SDK.
-          </p>
-          <p>
-          Click on the menu to choose a demo, or go to the first one: <a href="/#system" onclick="document.getElementById('system_select').click();">System monitoring</a>
+            Click on the menu to choose a specific demo, or go to the first demo: <a href="/#system" onclick="document.getElementById('system_select').click();">System monitoring</a>
           </p>
         </div>
 
@@ -65,8 +73,8 @@
             </div>
             <div class="pure-u-2-3">
               <p style="padding-left: 1em;">
-                This demo is using the <a href="https://ts.viam.dev/">Viam Typescript SDK</a>.
-                The code is using Viam's <a href="https://docs.viam.com/components/sensor/#api">Sensor API</a> to retrieve system stats from the Telegraf module:
+                This in-browser demo is using the <a href="https://ts.viam.dev/">Viam Typescript SDK</a>.
+                We are using Viam's <a href="https://docs.viam.com/components/sensor/#api">Sensor API</a> to retrieve system stats from the Telegraf module:
               </p>
               <div style="height:140px;width:570px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript">import { createRobotClient, SensorClient } from '@viamrobotics/sdk';
@@ -94,7 +102,7 @@ stats = await system_monitor.get_readings()
         <div class="content" id="object_content" style="display: none;">
           <p>
             Each Viam <a href="https://docs.viam.com/components/">component</a> and <a href="https://docs.viam.com/services/">service</a> implements an <a href="https://docs.viam.com/build/program/apis/">API</a>, providing an interface that is consistent across all models of that resource.
-            One type of built-in service that Viam provides is a <a href="https://docs.viam.com/ml/vision/">Vision service</a>, and all models of the Vision service implement the <a href="https://docs.viam.com/ml/vision/#api">rdk:service:vision API</a>.
+            One type of built-in service that Viam provides is a <a href="https://docs.viam.com/ml/vision/">Vision Service</a>, and all models of the Vision Service implement the <a href="https://docs.viam.com/ml/vision/#api">rdk:service:vision API</a>.
             This API provides methods such as GetDetections() and GetDetectionsFromCamera().
           <p>  
             Select one of the detectors below to use it with images from your device's webcam.
@@ -124,7 +132,7 @@ stats = await system_monitor.get_readings()
                     Viam's <a href="https://docs.viam.com/ml/vision/">Vision API</a> is being used to get detections.
                     Regardless of the of model, the API method GetDetections() is called.
                   </p>
-                  <div style="height:300px;width:560px;overflow:auto;padding-left: 1em;">
+                  <div style="height:300px;width:595px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript" style="display:block">import { createRobotClient, VisionClient } from '@viamrobotics/sdk';
 import { SpeechClient } from 'speech-service-api';
 client = createRobotClient({...});
@@ -264,37 +272,54 @@ while (!completed) {
               </div>
             </div>
 <br/>
-              <div style="height:500px;width:580px;overflow:auto;padding-left: 1em;">
+              <div style="height:480px;width:600px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript" style="display:block">import { createRobotClient, VisionClient } from '@viamrobotics/sdk';
-import { ChatClient } from 'chat-service-api';
+import { SpeechClient } from 'speech-service-api';
 const client = createRobotClient({...});
-const asl_detector = new VisionClient(client, "asl_detector");
-const llm = new ChatClient(client, "llm");
+const vlm_classifier = new VisionClient(client, "moondream-classifier");
+const speech = new SpeechClient(client, "speechio");
 
-let completed = false;
-let last_seen = "";
-let letters = "";
-const chat_prefix = "Create an acronym from the letters ";
-while (!completed) {
-  let detections = await asl_detector.getDetections(image, 300, 280, 'image/jpeg');
-  if (detections[0] && detections[0].confidence > .8) {
-    if (detections[0].className == 'V' && last_seen == 'V') {
-      let completion = await llm.chat(chat_prefix + letters);
-      completed = true;
-    }
-    else {
-      last_seen = detections[0].className;
-      letters = letters + detections[0].className;
-    }
-  }
-}
+// capture audio, in this case via browser functionality
+const capturedAudioArray = captureAudio()
+const speechText = await speech.toText(capturedAudioArray, "wav")
+let classifications = 
+  await vlm_classifier.getClassifications(theImage, 300, 280, 
+                        "image/jpeg", 1, {"question": speechText});
+
+  // now we can print the response from the VLM
+let vlmResponse = classifications[0].className;
                 </code></pre></div>
             </div>
           </div> 
         </div>
 
         <div class="content" id="more_content" style="display: none;">
-          more demo
+          <div class="pure-g">
+            <div class="pure-u-1-2">
+              <p>
+                <img src="images/viam_robot.png" style="width:300px"/>
+              </p>
+            </div>
+            <div class="pure-u-1-2">
+              <p>
+                Now that you've gotten hands-on with some Viam platform configurations and capabilities, we are excited to see how you might use Viam to accelerate your projects.
+              </p>
+              <p>
+                Viam is at its core an open source platform, and you get started with our secure in-cloud data and fleet management solutions for free (and continue with <a href="https://viam.com/product/pricing">transparent consumption-based pricing</a>).
+              </p>
+              <p>
+                How will you use Viam to revolutionize your hardware projects?
+              </p>
+              <p>
+                <ul>
+                  <li><a href="https://www.viam.com/resources/try-viam">Control a robotic rover running in Viam's office</a></li>
+                  <li><a href="https://viam.com/blog">Check out the Viam blog</a></li>
+                  <li><a href="https://docs.viam.com/">Read more in the Viam documentation</a></li>
+                  <li><a href="https://discord.gg/viam">Join our Discord community</a></li>
+                </ul>
+              </p>
+            </div>
+          </div>
         </div>
 
 

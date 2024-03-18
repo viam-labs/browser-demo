@@ -125,6 +125,7 @@ async function main() {
   });
 
   vlmRecordQuestion?.addEventListener("mouseup", async () => {
+    vlmRecordQuestion?.classList.add("pure-button-disabled");
     mediaRecorder.stop();
     // give some time to process
     await new Promise(r => setTimeout(r, 200));
@@ -135,6 +136,7 @@ async function main() {
     vlm_completion.innerHTML = "Please wait... this can take some time."
     let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
     vlm_completion.innerHTML = classifications[0].className;
+    vlmRecordQuestion?.classList.remove("pure-button-disabled");
   });
 
   let running = {
