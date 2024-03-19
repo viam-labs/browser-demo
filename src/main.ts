@@ -60,7 +60,7 @@ async function main() {
   const asl_detector = new VisionClient(client, "asl_detector");
   const vlm_classifier = new VisionClient(client, "moondream-vision");
   const llm = new ChatClient(client, "llm");
-  
+
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
   let detector_code = { 
@@ -184,6 +184,7 @@ async function main() {
           await mediaRecorder.stop();
         });
 
+        mediaInit = true;
       }
     });
 
