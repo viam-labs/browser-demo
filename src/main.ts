@@ -55,7 +55,12 @@ async function main() {
     return;
   }
   await register(await connect());
-
+  const system_monitor = new SensorClient(client, 'telegraf');
+  const speech = new SpeechClient(client, "speechio");
+  const asl_detector = new VisionClient(client, "asl_detector");
+  const vlm_classifier = new VisionClient(client, "moondream-vision");
+  const llm = new ChatClient(client, "llm");
+  
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
   let detector_code = { 
@@ -99,51 +104,7 @@ async function main() {
   let vlmRecordQuestion = document.querySelector('#vlmRecordQuestion');
 
   let captureDevice;
-  let vstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-  let astream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-
-  console.log("got media stream")
-  captureDevice = new ImageCapture(vstream.getVideoTracks()[0]);
-  const mediaRecorder = new MediaRecorder(astream, { mimeType: 'audio/wav' });
-  let audioChunks = [];
-
-  const system_monitor = new SensorClient(client, 'telegraf');
-  const speech = new SpeechClient(client, "speechio");
-  const asl_detector = new VisionClient(client, "asl_detector");
-  const vlm_classifier = new VisionClient(client, "moondream-vision");
-  const llm = new ChatClient(client, "llm");
-
-  mediaRecorder.addEventListener('dataavailable', event => {
-    audioChunks.push(event.data);
-    console.log("recording ended")
-  });
-
-  mediaRecorder.onstop = async (e) => {
-    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-    audioChunks = [];
-    
-    // uncomment below for testing
-    //const audio = new Audio();
-    //audio.src = URL.createObjectURL(blob);
-    //audio.play();
-    const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
-    vlm_question.innerHTML = speechText;
-    vlm_completion.innerHTML = "Please wait... this can take some time."
-    let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
-    vlm_completion.innerHTML = classifications[0].className;
-    vlmRecordQuestion?.classList.remove("pure-button-disabled");
-  };
-
-  vlmRecordQuestion?.addEventListener("mousedown", () => {
-    mediaRecorder.start();
-    vlm_question.innerHTML = "Please wait...";
-    vlm_completion.innerHTML = "";
-  });
-
-  vlmRecordQuestion?.addEventListener("mouseup", async () => {
-    vlmRecordQuestion?.classList.add("pure-button-disabled");
-    await mediaRecorder.stop();
-  });
+  let mediaInit = false;
 
   let running = {
     'home' : false,
@@ -166,7 +127,7 @@ async function main() {
   nav_selectors.forEach(function(sel_elem) {
     sel_elem.classList.remove('pure-menu-selected')
 
-    sel_elem.addEventListener("click", function() {
+    sel_elem.addEventListener("click", async function() {
       for (const elem in nav_selectors) {
         let elem_prefix = nav_selectors[elem].id.split('_')[0]
         let elem_content = document.getElementById(`${elem_prefix}_content`);
@@ -181,7 +142,51 @@ async function main() {
           elem_content.style.display = "none"
         }
       }
+
+      if (! mediaInit) {
+        let vstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        let astream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+
+        console.log("got media stream")
+        captureDevice = new ImageCapture(vstream.getVideoTracks()[0]);
+        const mediaRecorder = new MediaRecorder(astream, { mimeType: 'audio/wav' });
+        let audioChunks = [];
+
+        mediaRecorder.addEventListener('dataavailable', event => {
+          audioChunks.push(event.data);
+          console.log("recording ended")
+        });
+
+        mediaRecorder.onstop = async (e) => {
+          const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+          audioChunks = [];
+          
+          // uncomment below for testing
+          //const audio = new Audio();
+          //audio.src = URL.createObjectURL(blob);
+          //audio.play();
+          const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
+          vlm_question.innerHTML = speechText;
+          vlm_completion.innerHTML = "Please wait... this can take some time."
+          let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
+          vlm_completion.innerHTML = classifications[0].className;
+          vlmRecordQuestion?.classList.remove("pure-button-disabled");
+        };
+
+        vlmRecordQuestion?.addEventListener("mousedown", () => {
+          mediaRecorder.start();
+          vlm_question.innerHTML = "Please wait...";
+          vlm_completion.innerHTML = "";
+        });
+
+        vlmRecordQuestion?.addEventListener("mouseup", async () => {
+          vlmRecordQuestion?.classList.add("pure-button-disabled");
+          await mediaRecorder.stop();
+        });
+
+      }
     });
+
 });
 
   async function run(type) {
