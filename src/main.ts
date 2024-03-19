@@ -315,7 +315,7 @@ async function main() {
         let last_seen = "";
         let letters = "";
 
-        while (!completed) {
+        while (running['gesture'] && !completed) {
           let img = await captureImage(300,280);
           let detections = await asl_detector.getDetections(img.image, 300, 280, 'image/jpeg');
           if (detections[0] && detections[0].confidence > .7) {
