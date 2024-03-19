@@ -46,10 +46,10 @@
               <p><a href="https://viam.com">Viam</a> is a platform that allows you to compose a smart machine or robotics project from any number of components or services through configuration.</p>
               <p>
                 Components typically represent physical hardware, while services represent higher-level functionality - often integrating with physical hardware or other technologies like Machine Learning, Artificial Intelligence, or external APIs.
-                Viam components and services that are configured as part of a machine present an API that can then be interfaced with through secure SDKs in the programming language of your choice. 
+                Viam components and services that are configured as part of a machine can be used securely with APIs in popular programming languages.
               </p> 
               <p>
-                Here, you can interact with a number of built-in and modular Viam resources running on a viam-server instance in Google Cloud Platform (GCP) through Viam's TypeScript SDK.
+                This playground allows you to interact with a number of built-in and modular Viam resources running on a viam-server instance in Google Cloud Platform (GCP) through Viam's TypeScript SDK.
                 Note that video and audio capture is used in some demos, so your browser will ask for permission.
               </p>
               </div>
@@ -131,7 +131,7 @@ stats = await system_monitor.get_readings()
                   <p id="face-detector-desc" style="display:none;padding-left: 1em;">The face detector is an ML model <a href="https://app.viam.com/module/viam-labs/facial-detector">from the Viam registry</a> that integrates the <a href="https://github.com/serengil/deepface">DeepFace</a> library.</p>
                   <p style="padding-left: 1em;">
                     Viam's <a href="https://docs.viam.com/ml/vision/">Vision API</a> is being used to get detections.
-                    Regardless of the of model, the API method GetDetections() is called.
+                    Regardless of the model, the API method GetDetections() is called.
                   </p>
                   <div style="height:300px;width:595px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript" style="display:block">import { createRobotClient, VisionClient } from '@viamrobotics/sdk';
