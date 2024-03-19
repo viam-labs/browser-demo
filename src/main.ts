@@ -115,20 +115,10 @@ async function main() {
 
   mediaRecorder.addEventListener('dataavailable', event => {
     audioChunks.push(event.data);
-    console.log("recording")
+    console.log("recording ended")
   });
 
-  vlmRecordQuestion?.addEventListener("mousedown", () => {
-    mediaRecorder.start();
-    vlm_question.innerHTML = "Please wait...";
-    vlm_completion.innerHTML = "";
-  });
-
-  vlmRecordQuestion?.addEventListener("mouseup", async () => {
-    vlmRecordQuestion?.classList.add("pure-button-disabled");
-    mediaRecorder.stop();
-    // give some time to process
-    await new Promise(r => setTimeout(r, 1000));
+  mediaRecorder.onstop = async (e) => {
     const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
     audioChunks = [];
     
@@ -142,6 +132,17 @@ async function main() {
     let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
     vlm_completion.innerHTML = classifications[0].className;
     vlmRecordQuestion?.classList.remove("pure-button-disabled");
+  };
+
+  vlmRecordQuestion?.addEventListener("mousedown", () => {
+    mediaRecorder.start();
+    vlm_question.innerHTML = "Please wait...";
+    vlm_completion.innerHTML = "";
+  });
+
+  vlmRecordQuestion?.addEventListener("mouseup", async () => {
+    vlmRecordQuestion?.classList.add("pure-button-disabled");
+    await mediaRecorder.stop();
   });
 
   let running = {
