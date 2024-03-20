@@ -1,4 +1,3 @@
-< a min
 (function (window, document) {
 
     // we fetch the elements each time because docusaurus removes the previous
