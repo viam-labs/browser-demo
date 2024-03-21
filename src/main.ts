@@ -90,6 +90,7 @@ async function main() {
 
   let captureDevice;
   let mediaInit = false;
+  let viamInit = false;
 
   let running = {
     'home' : false,
@@ -145,7 +146,8 @@ async function main() {
   const asl_detector = new VisionClient(client, "asl_detector");
   const vlm_classifier = new VisionClient(client, "moondream-vision");
   const llm = new ChatClient(client, "llm");
-
+  viamInit = true;
+  
   media_init.forEach(function(mi) {
     mi?.addEventListener("click", async function () {
       if (mediaInit) {return};
@@ -201,6 +203,9 @@ async function main() {
     if (type == 'system') {
       let display_stats = {}
       while(running['system']) {
+        while (! viamInit) {
+          await new Promise(r => setTimeout(r, 100));
+        }
         const stats = await system_monitor.getReadings();
         system_table.innerHTML = "";
         let row = system_table.insertRow();
