@@ -282,3 +282,13 @@ Hides the menu at `48em`, but modify this based on your app's needs.
   0% {left:200px;}
   100% {left:-3500px;}
   }
+
+  .media_init {
+    color: #a00;
+    text-decoration: underline;
+    font-size: 16px;
+  }
+
+  .media_init_hidden {
+    display: none; 
+  }

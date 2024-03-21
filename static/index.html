@@ -44,7 +44,7 @@
         <div class="content" id="home_content">
           <div class="pure-g">
             <div class="pure-u-1-2">
-              <p><a href="https://viam.com">Viam</a> is a platform that allows you to compose a smart machine or robotics project from any number of components or services through configuration.</p>
+              <p><a target="_blank" href="https://viam.com">Viam</a> is a platform that allows you to compose a smart machine or robotics project from any number of components or services through configuration.</p>
               <p>
                 Components typically represent physical hardware, while services represent higher-level functionality - often integrating with physical hardware or other technologies like Machine Learning, Artificial Intelligence, or external APIs.
                 Viam components and services that are configured as part of a machine can be used securely with APIs in popular programming languages.
@@ -64,8 +64,8 @@
         </div>
 
         <div class="content" id="system_content" style="display: none;">
-          <p>Here, we are getting real-time system data from the server running Viam using a <a href="https://app.viam.com/module/aleparedes/viam-telegraf-sensor">module from the Viam registry</a> that provides a <a href="https://www.influxdata.com/time-series-platform/telegraf/">Telegraf</a> sensor component.
-          You can use data collected from this or other modules to create realtime monitoring or management dashboards, and also collect and use this data with Viam's <a href="https://docs.viam.com/data/">Data Management</a> solution.
+          <p>Here, we are getting real-time system data from the server running Viam using a <a target="_blank" href="https://app.viam.com/module/aleparedes/viam-telegraf-sensor">module from the Viam registry</a> that provides a <a target="_blank" href="https://www.influxdata.com/time-series-platform/telegraf/">Telegraf</a> sensor component.
+          You can use data collected from this or other modules to create realtime monitoring or management dashboards, and also collect and use this data with Viam's <a target="_blank" href="https://docs.viam.com/data/">Data Management</a> solution.
           </p>
           <div class="pure-g">
             <div class="pure-u-1-3">
@@ -75,8 +75,8 @@
             </div>
             <div class="pure-u-2-3">
               <p style="padding-left: 1em;">
-                This in-browser demo is using the <a href="https://ts.viam.dev/">Viam Typescript SDK</a>.
-                We are using Viam's <a href="https://docs.viam.com/components/sensor/#api">Sensor API</a> to retrieve system stats from the Telegraf module:
+                This in-browser demo is using the <a target="_blank" href="https://ts.viam.dev/">Viam Typescript SDK</a>.
+                We are using Viam's <a target="_blank" href="https://docs.viam.com/components/sensor/#api">Sensor API</a> to retrieve system stats from the Telegraf module:
               </p>
               <div style="height:140px;width:570px;overflow:auto;padding-left: 1em;">
 <pre><code class="language-javascript">import { createRobotClient, SensorClient } from '@viamrobotics/sdk';
@@ -86,7 +86,7 @@ const stats = await system_monitor.getReadings();
 // now do something with the stats like display in a table
               </code></pre></div>
               <p style="padding-left: 1em;">
-                Viam has a number of other programming language <a href="https://docs.viam.com/sdks/">SDKs</a> that you can use with your projects to interact with components and services.
+                Viam has a number of other programming language <a target="_blank" href="https://docs.viam.com/sdks/">SDKs</a> that you can use with your projects to interact with components and services.
                 For example, code with the same functionality would look like this in Python:
               </p>
               <div style="height:160px;width:570px;overflow:auto;padding-left: 1em;">
@@ -102,13 +102,16 @@ stats = await system_monitor.get_readings()
         </div>
 
         <div class="content" id="object_content" style="display: none;">
+          <div class="media_init">
+            For this demo, you must enable microphone and camera access. Please click here and grant permission to your browser.
+          </div>
           <p>
-            Each Viam <a href="https://docs.viam.com/components/">component</a> and <a href="https://docs.viam.com/services/">service</a> implements an <a href="https://docs.viam.com/build/program/apis/">API</a>, providing an interface that is consistent across all models of that resource.
-            One type of built-in service that Viam provides is a <a href="https://docs.viam.com/ml/vision/">Vision Service</a>, and all models of the Vision Service implement the <a href="https://docs.viam.com/ml/vision/#api">rdk:service:vision API</a>.
+            Each Viam <a target="_blank" href="https://docs.viam.com/components/">component</a> and <a target="_blank" href="https://docs.viam.com/services/">service</a> implements an <a target="_blank" href="https://docs.viam.com/build/program/apis/">API</a>, providing an interface that is consistent across all models of that resource.
+            One type of built-in service that Viam provides is a <a target="_blank" href="https://docs.viam.com/ml/vision/">Vision Service</a>, and all models of the Vision Service implement the <a target="_blank" href="https://docs.viam.com/ml/vision/#api">rdk:service:vision API</a>.
             This API provides methods such as GetDetections() and GetDetectionsFromCamera().
           <p>  
             Select one of the detectors below to use it with images from your device's webcam.
-            Each time a new class is detected, we'll use the TTS (text to speech) capability of the <a href="https://app.viam.com/module/viam-labs/speech">speech module</a> from Viam's <a href="https://docs.viam.com/registry/">registry</a> to say what is seen out-loud.     
+            Each time a new class is detected, we'll use the TTS (text to speech) capability of the <a target="_blank" href="https://app.viam.com/module/viam-labs/speech">speech module</a> from Viam's <a target="_blank" href="https://docs.viam.com/registry/">registry</a> to say what is seen out-loud.     
           </p> 
 
             <div class="pure-g">
@@ -127,11 +130,11 @@ stats = await system_monitor.get_readings()
               </p>
               <div class="pure-u-2-3">
                 <p>
-                  <p id="coco-detector-desc" style="display:block;padding-left: 1em;">The efficientdet detector is a popular Machine Learning object detector based on the COCO open-source dataset. This detector is in tflite format and can be found <a href="https://app.viam.com/ml-model/viam-labs/EfficientDet-COCO">on the Viam registry</a>.</p>
+                  <p id="coco-detector-desc" style="display:block;padding-left: 1em;">The efficientdet detector is a popular Machine Learning object detector based on the COCO open-source dataset. This detector is in tflite format and can be found <a target="_blank" href="https://app.viam.com/ml-model/viam-labs/EfficientDet-COCO">on the Viam registry</a>.</p>
                   <p id="red-detector-desc" style="display:none;padding-left: 1em;">The red detector is a heuristics-based color detector and a model that is built-in to the Viam platform.</p>
-                  <p id="face-detector-desc" style="display:none;padding-left: 1em;">The face detector is an ML model <a href="https://app.viam.com/module/viam-labs/facial-detector">from the Viam registry</a> that integrates the <a href="https://github.com/serengil/deepface">DeepFace</a> library.</p>
+                  <p id="face-detector-desc" style="display:none;padding-left: 1em;">The face detector is an ML model <a target="_blank" href="https://app.viam.com/module/viam-labs/facial-detector">from the Viam registry</a> that integrates the <a target="_blank" href="https://github.com/serengil/deepface">DeepFace</a> library.</p>
                   <p style="padding-left: 1em;">
-                    Viam's <a href="https://docs.viam.com/ml/vision/">Vision API</a> is being used to get detections.
+                    Viam's <a target="_blank" href="https://docs.viam.com/ml/vision/">Vision API</a> is being used to get detections.
                     Regardless of the model, the API method GetDetections() is called.
                   </p>
                   <div style="height:300px;width:595px;overflow:auto;padding-left: 1em;">
@@ -156,15 +159,18 @@ if (detections[0] && detections[0].confidence > .6) {
           </div>
 
         <div class="content" id="gesture_content" style="display: none;">
+          <div class="media_init">
+            For this demo, you must enable microphone and camera access. Please click here and grant permission to your browser.
+          </div>
           <p>
             Smart machines you build on the Viam platform can be extended with resources from elsewhere.
-            In this demo, we are using a gesture detection <a href="https://huggingface.co/lewiswatson/yolov8x-tuned-hand-gestures">model 
-            from HuggingFace</a> managed by the <a href="https://app.viam.com/module/viam-labs/YOLOv8">YOLOv8 vision service</a> from the Viam registry to detect letters in ASL (American Sign Language).
+            In this demo, we are using a gesture detection <a target="_blank" href="https://huggingface.co/lewiswatson/yolov8x-tuned-hand-gestures">model 
+            from HuggingFace</a> managed by the <a target="_blank" href="https://app.viam.com/module/viam-labs/YOLOv8">YOLOv8 vision service</a> from the Viam registry to detect letters in ASL (American Sign Language).
           </p>
           <p>
             Try making some of the signs, <b>ending with the letter V (looks like the "peace" sign) 2 times</b>. 
-            Once this has been detected, we will use the <a href="https://huggingface.co/pansophic/rocket-3B">Rocket 3b</a> LLM (large language model) 
-            deployed to our machine with the <a href="https://app.viam.com/module/viam-labs/local-llm">local-llm</a> module from the Viam registry to create a response based on the letters you signed.
+            Once this has been detected, we will use the <a target="_blank" href="https://huggingface.co/pansophic/rocket-3B">Rocket 3b</a> LLM (large language model) 
+            deployed to our machine with the <a target="_blank" href="https://app.viam.com/module/viam-labs/local-llm">local-llm</a> module from the Viam registry to create a response based on the letters you signed.
           </p>
           <div class="pure-g">
             <div class="pure-u-1-3">
@@ -213,15 +219,18 @@ while (!completed) {
 
 
         <div class="content" id="vlm_content" style="display: none;">
+          <div class="media_init">
+            For this demo, you must enable microphone and camera access. Please click here and grant permission to your browser.
+          </div>
           <p>
             Vision language models (VLMs) extend traditional LLMs by incorporating the ability to interpret images.
-            We can run small VLMs like <a href="https://github.com/vikhyat/moondream">Moondream</a> (or larger VLMs!)
-            with Viam, in this case managed by the <a href="https://app.viam.com/module/viam-labs/moondream-vision">moondream-vision service</a> from the Viam registry.
+            We can run small VLMs like <a target="_blank" href="https://github.com/vikhyat/moondream">Moondream</a> (or larger VLMs!)
+            with Viam, in this case managed by the <a target="_blank" href="https://app.viam.com/module/viam-labs/moondream-vision">moondream-vision service</a> from the Viam registry.
           </p>
           <p>
             Choose one of the images, or capture one from your webcam.
             Then, hold down the "Ask Question" button and ask a question about the photo like "Where is the dog?" aloud. 
-            We will use the <a href="https://app.viam.com/module/viam-labs/speech">Speech module</a> from the Viam registry to convert your question speech to text (STT), 
+            We will use the <a target="_blank" href="https://app.viam.com/module/viam-labs/speech">Speech module</a> from the Viam registry to convert your question speech to text (STT), 
             then send that to the Moondream VLM for a response.
           </p>
           <div class="pure-g">
@@ -307,17 +316,17 @@ let vlmResponse = classifications[0].className;
                 Now that you've gotten hands-on with some Viam platform configurations and capabilities, we are excited to see how you might use Viam to accelerate your projects.
               </p>
               <p>
-                Viam is at its core an open source platform, and you get started with our secure in-cloud data and fleet management solutions for free (and continue with <a href="https://viam.com/product/pricing">transparent consumption-based pricing</a>).
+                Viam is at its core an open source platform, and you get started with our secure in-cloud data and fleet management solutions for free (and continue with <a target="_blank" href="https://viam.com/product/pricing">transparent consumption-based pricing</a>).
               </p>
               <p>
                 How will you use Viam to revolutionize your hardware projects?
               </p>
               <p>
                 <ul>
-                  <li><a href="https://www.viam.com/resources/try-viam">Control a robotic rover running in Viam's office</a></li>
-                  <li><a href="https://viam.com/blog">Check out the Viam blog</a></li>
-                  <li><a href="https://docs.viam.com/">Read more in the Viam documentation</a></li>
-                  <li><a href="https://discord.gg/viam">Join our Discord community</a></li>
+                  <li><a target="_blank" href="https://www.viam.com/resources/try-viam">Control a robotic rover running in Viam's office</a></li>
+                  <li><a target="_blank" href="https://viam.com/blog">Check out the Viam blog</a></li>
+                  <li><a target="_blank" href="https://docs.viam.com/">Read more in the Viam documentation</a></li>
+                  <li><a target="_blank" href="https://discord.gg/viam">Join our Discord community</a></li>
                 </ul>
               </p>
             </div>

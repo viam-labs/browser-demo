@@ -45,22 +45,6 @@ function convertDataURIToBinary(dataURI) {
 }
 
 async function main() {
-  // Connect to client
-  let client: Client;  
-  try {
-    client = await viam_connect();
-    console.log('connected!');
-  } catch (error) {
-    console.log(error);
-    return;
-  }
-  await register(await connect());
-  const system_monitor = new SensorClient(client, 'telegraf');
-  const speech = new SpeechClient(client, "speechio");
-  const asl_detector = new VisionClient(client, "asl_detector");
-  const vlm_classifier = new VisionClient(client, "moondream-vision");
-  const llm = new ChatClient(client, "llm");
-
   let detector_button = document.querySelector("#click-photo");
   let detector_select = document.querySelector("#detector-select");
   let detector_code = { 
@@ -91,6 +75,7 @@ async function main() {
 
   let asl_words = document.querySelector("#asl_words");
   let asl_completion = document.querySelector("#asl_completion");
+  let media_init = document.querySelectorAll(".media_init");
 
   let captureForVLM = document.querySelector('#captureForVLM');
   let vlmImages = {
@@ -142,53 +127,75 @@ async function main() {
           elem_content.style.display = "none"
         }
       }
-
-      if (! mediaInit) {
-        let vstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        let astream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-
-        console.log("got media stream")
-        captureDevice = new ImageCapture(vstream.getVideoTracks()[0]);
-        const mediaRecorder = new MediaRecorder(astream, { mimeType: 'audio/wav' });
-        let audioChunks = [];
-
-        mediaRecorder.addEventListener('dataavailable', event => {
-          audioChunks.push(event.data);
-          console.log("recording ended")
-        });
-
-        mediaRecorder.onstop = async (e) => {
-          const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-          audioChunks = [];
-          
-          // uncomment below for testing
-          //const audio = new Audio();
-          //audio.src = URL.createObjectURL(blob);
-          //audio.play();
-          const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
-          vlm_question.innerHTML = speechText;
-          vlm_completion.innerHTML = "Please wait... this can take some time."
-          let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
-          vlm_completion.innerHTML = classifications[0].className;
-          vlmRecordQuestion?.classList.remove("pure-button-disabled");
-        };
-
-        vlmRecordQuestion?.addEventListener("mousedown", () => {
-          mediaRecorder.start();
-          vlm_question.innerHTML = "Please wait...";
-          vlm_completion.innerHTML = "";
-        });
-
-        vlmRecordQuestion?.addEventListener("mouseup", async () => {
-          vlmRecordQuestion?.classList.add("pure-button-disabled");
-          await mediaRecorder.stop();
-        });
-
-        mediaInit = true;
-      }
     });
-
 });
+
+  // Connect to client
+  let client: Client;  
+  try {
+    client = await viam_connect();
+    console.log('connected!');
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+  await register(await connect());
+  const system_monitor = new SensorClient(client, 'telegraf');
+  const speech = new SpeechClient(client, "speechio");
+  const asl_detector = new VisionClient(client, "asl_detector");
+  const vlm_classifier = new VisionClient(client, "moondream-vision");
+  const llm = new ChatClient(client, "llm");
+
+  media_init.forEach(function(mi) {
+    mi?.addEventListener("click", async function () {
+      if (mediaInit) {return};
+      
+      let vstream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      let astream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+
+      console.log("got media stream")
+      captureDevice = new ImageCapture(vstream.getVideoTracks()[0]);
+      const mediaRecorder = new MediaRecorder(astream, { mimeType: 'audio/wav' });
+      let audioChunks = [];
+
+      mediaRecorder.addEventListener('dataavailable', event => {
+        audioChunks.push(event.data);
+        console.log("recording ended")
+      });
+
+      mediaRecorder.onstop = async (e) => {
+        const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+        audioChunks = [];
+        
+        // uncomment below for testing
+        //const audio = new Audio();
+        //audio.src = URL.createObjectURL(blob);
+        //audio.play();
+        const speechText = await speech.toText(new Uint8Array(await new Response(blob).arrayBuffer()), "wav")
+        vlm_question.innerHTML = speechText;
+        vlm_completion.innerHTML = "Please wait... this can take some time."
+        let classifications = await vlm_classifier.getClassifications(getImage(vlmCanvas), 300, 280, 'image/jpeg', 1, {"question": speechText});
+        vlm_completion.innerHTML = classifications[0].className;
+        vlmRecordQuestion?.classList.remove("pure-button-disabled");
+      };
+
+      vlmRecordQuestion?.addEventListener("mousedown", () => {
+        mediaRecorder.start();
+        vlm_question.innerHTML = "Please wait...";
+        vlm_completion.innerHTML = "";
+      });
+
+      vlmRecordQuestion?.addEventListener("mouseup", async () => {
+        vlmRecordQuestion?.classList.add("pure-button-disabled");
+        await mediaRecorder.stop();
+      });
+
+      mediaInit = true;
+      media_init.forEach(function(mi) {
+        mi?.classList.add("media_init_hidden");
+      });
+    });
+  });
 
   async function run(type) {
     if (type == 'system') {
@@ -321,7 +328,7 @@ async function main() {
         let last_seen = "";
         let letters = "";
 
-        while (running['gesture'] && !completed) {
+        while (running['gesture'] && !completed && mediaInit) {
           let img = await captureImage(300,280);
           let detections = await asl_detector.getDetections(img.image, 300, 280, 'image/jpeg');
           if (detections[0] && detections[0].confidence > .7) {
@@ -343,6 +350,7 @@ async function main() {
             }
           }
         }
+        await new Promise(r => setTimeout(r, 10));
       }
     }
   }
